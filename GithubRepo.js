@@ -4,12 +4,12 @@
 
 class Configuration {
     // Earliest Commit (Currently Date - 90 Days)
-    static earliestCommit = new Date((new Date()).getTime() - 30*24*60*60*1000);
+    static earliestCommit = new Date((new Date()).getTime() - 30 * 24 * 60 * 60 * 1000);
     static githubToken = nil;
 }
 
 class GithubRepoWidget {
-    repo = "abjc/abjc-tvos"
+    repo = args.widgetParameter || "abjc/abjc-tvos"
 
     constructor() {
         let colorDark = "#181717"
@@ -53,18 +53,26 @@ class GithubRepoWidget {
     }
 
     async createWidget() {
-        let data = await this.loadCache()
+
+        var data = null
+        try {
+            data = await this.loadData()
+        } catch (err) {
+            console.error(err)
+            data = await this.loadCache()
+        }
+        
 
         // Basic widget setup
         let widget = new ListWidget()
-        widget.setPadding(18,0,18,0)
+        widget.setPadding(18, 0, 18, 0)
 
         // Widget Header
         if (true) {
             let headerStack = widget.addStack()
             headerStack.layoutHorizontally()
             headerStack.topAlignContent()
-            headerStack.setPadding(0,18,0,18)
+            headerStack.setPadding(0, 18, 0, 18)
 
             // Header Image
             let image = await this.imageFromBase64(this.ghIcon)
@@ -85,7 +93,7 @@ class GithubRepoWidget {
             let iconAndTextStack = widget.addStack()
             iconAndTextStack.spacing = 4
             iconAndTextStack.centerAlignContent()
-            
+
             // Icon
             let iconUI = iconAndTextStack.addImage(icon)
             iconUI.resizable = true
@@ -96,7 +104,7 @@ class GithubRepoWidget {
             txtUI.font = Font.boldSystemFont(18)
             txtUI.textColor = color
             txtUI.textOpacity = 0.8
-        }        
+        }
 
         widget.addSpacer()
 
@@ -107,7 +115,7 @@ class GithubRepoWidget {
             lastCommitStack.layoutVertically()
             lastCommitStack.centerAlignContent()
             lastCommitStack.spacing = 0
-            lastCommitStack.setPadding(0,20,0,20)
+            lastCommitStack.setPadding(0, 20, 0, 20)
 
             // Label
             let df = new DateFormatter()
@@ -124,9 +132,9 @@ class GithubRepoWidget {
             msgLbl.font = Font.regularSystemFont(11)
             msgLbl.lineLimit = 2
             msgLbl.textColor = this.fgColor
-            
+
             // Text
-            let byLabel = lastCommitStack.addText("by "+latestCommit.author)
+            let byLabel = lastCommitStack.addText("by " + latestCommit.author)
             byLabel.font = Font.regularSystemFont(9)
             byLabel.textColor = this.fgColor
             byLabel.textOpacity = 0.8
@@ -156,15 +164,15 @@ class GithubRepoWidget {
             let extraDataStack = widget.addStack()
             extraDataStack.layoutHorizontally()
             extraDataStack.bottomAlignContent()
-            extraDataStack.setPadding(0,18,0,18)
-            
+            extraDataStack.setPadding(0, 18, 0, 18)
+
             addIconAndText(extraDataStack, await this.imageFromBase64(this.ghIconIssue), data["issues"], this.fgColor)
             extraDataStack.addSpacer()
             addIconAndText(extraDataStack, await this.imageFromBase64(this.ghIconStar), data["stars"], this.fgColor)
             extraDataStack.addSpacer()
             addIconAndText(extraDataStack, await this.imageFromBase64(this.ghIconPull), data["pulls"], this.fgColor)
         }
-        
+
         return widget
     }
 
@@ -186,15 +194,15 @@ class GithubRepoWidget {
             fm.createDirectory(repo_dir, true)
         }
 
-        // // Update data.json
-        // let repo_data = await this.loadData()
-        // fm.writeString(repo_json, JSON.stringify(repo_data))
+        // Update data.json
+        let repo_data = await this.loadData()
+        fm.writeString(repo_json, JSON.stringify(repo_data))
 
         // Test if img is saved, download if not
         if (!fm.fileExists(repo_img)) {
             let avatar_url = repo_data["owner"]["avatar"]
             console.log(avatar_url)
-            let img_data = await makeRequest(avatar_url).load()
+            let img_data = await this.makeRequest(avatar_url).load()
             fm.write(repo_img, img_data)
         }
     }
@@ -203,9 +211,9 @@ class GithubRepoWidget {
         let req = new Request(url)
         if (Configuration.githubToken != null) {
             req.headers = {
-                "Authorization": "token "+Configuration.githubToken
+                "Authorization": "token " + Configuration.githubToken
             }
-            console.log("TOKEN: '"+"token "+Configuration.githubToken+"'")
+            console.log("TOKEN: '" + "token " + Configuration.githubToken + "'")
         }
         return req
     }
@@ -261,12 +269,12 @@ class GithubRepoWidget {
         let data = await this.makeRequest(this.apiBaseUrl + "/repos/" + this.repo + "/commits").loadJSON()
         let latest = data[0]
 
-        console.log(Date(latest["commit"]["committer"]["date"].slice(0,10)))
-        
+        console.log(Date(latest["commit"]["committer"]["date"].slice(0, 10)))
+
         return {
             author: latest["commit"]["author"]["name"],
             message: latest["commit"]["message"],
-            date: Date(latest["commit"]["committer"]["date"].slice(0,10))
+            date: Date(latest["commit"]["committer"]["date"].slice(0, 10))
         }
     }
     // Load Commit History
@@ -283,22 +291,22 @@ class GithubRepoWidget {
         let startDate = Number(Configuration.earliestCommit) - Configuration.earliestCommit.getTime() % (3600 * 1000 * 24)
         let endDate = Number(new Date())
         var date = startDate
-        
-        
+
+
         var timeline = {}
-        
+
         while (date < endDate) {
             let strDate = new Date(date).toISOString().substring(0, 10)
             timeline[strDate] = 0
             date = date + 86400000
         }
-      
+
         data.forEach(commit => {
-          let date = commit["commit"]["committer"]["date"].slice(0,10)
-          timeline[date] += 1
+            let date = commit["commit"]["committer"]["date"].slice(0, 10)
+            timeline[date] += 1
         })
 
-        var values = Object.keys(timeline).map(function(key){
+        var values = Object.keys(timeline).map(function (key) {
             return timeline[key];
         });
 
@@ -316,56 +324,56 @@ class GithubRepoWidget {
 class LineChart {
 
     constructor(width, height, values) {
-      this.ctx = new DrawContext()
-      this.ctx.size = new Size(width, height)
-      this.values = values;
+        this.ctx = new DrawContext()
+        this.ctx.size = new Size(width, height)
+        this.values = values;
     }
-    
+
     _calculatePath() {
-      let maxValue = Math.max(...this.values);
-      let minValue = Math.min(...this.values);
-      let difference = maxValue - minValue;
-      let count = this.values.length;
-      let step = this.ctx.size.width / (count - 1);
-      let points = this.values.map((current, index, all) => {
-          let x = step*index
-          let y = this.ctx.size.height - (current - minValue) / difference * this.ctx.size.height;
-          return new Point(x, y)
-      });
-      return this._getSmoothPath(points);
+        let maxValue = Math.max(...this.values);
+        let minValue = Math.min(...this.values);
+        let difference = maxValue - minValue;
+        let count = this.values.length;
+        let step = this.ctx.size.width / (count - 1);
+        let points = this.values.map((current, index, all) => {
+            let x = step * index
+            let y = this.ctx.size.height - (current - minValue) / difference * this.ctx.size.height;
+            return new Point(x, y)
+        });
+        return this._getSmoothPath(points);
     }
-        
+
     _getSmoothPath(points) {
-      let path = new Path()
-      path.move(new Point(0, this.ctx.size.height));
-      path.addLine(points[0]);
-      for(var i = 0; i < points.length-1; i ++) {
-        let xAvg = (points[i].x + points[i+1].x) / 2;
-        let yAvg = (points[i].y + points[i+1].y) / 2;
-        let avg = new Point(xAvg, yAvg);
-        let cp1 = new Point((xAvg + points[i].x) / 2, points[i].y);
-        let next = new Point(points[i+1].x, points[i+1].y);
-        let cp2 = new Point((xAvg + points[i+1].x) / 2, points[i+1].y);
-        path.addQuadCurve(avg, cp1);
-        path.addQuadCurve(next, cp2);
-      }
-      path.addLine(new Point(this.ctx.size.width, this.ctx.size.height))
-      path.closeSubpath()
-      return path;
+        let path = new Path()
+        path.move(new Point(0, this.ctx.size.height));
+        path.addLine(points[0]);
+        for (var i = 0; i < points.length - 1; i++) {
+            let xAvg = (points[i].x + points[i + 1].x) / 2;
+            let yAvg = (points[i].y + points[i + 1].y) / 2;
+            let avg = new Point(xAvg, yAvg);
+            let cp1 = new Point((xAvg + points[i].x) / 2, points[i].y);
+            let next = new Point(points[i + 1].x, points[i + 1].y);
+            let cp2 = new Point((xAvg + points[i + 1].x) / 2, points[i + 1].y);
+            path.addQuadCurve(avg, cp1);
+            path.addQuadCurve(next, cp2);
+        }
+        path.addLine(new Point(this.ctx.size.width, this.ctx.size.height))
+        path.closeSubpath()
+        return path;
     }
-    
+
     configure(fn) {
-      let path = this._calculatePath()
-      if(fn) {
-        fn(this.ctx, path);
-      } else {
-        this.ctx.addPath(path);
-        this.ctx.fillPath(path);
-      }
-      return this.ctx;
+        let path = this._calculatePath()
+        if (fn) {
+            fn(this.ctx, path);
+        } else {
+            this.ctx.addPath(path);
+            this.ctx.fillPath(path);
+        }
+        return this.ctx;
     }
-  
-  }
+
+}
 
 
 await new GithubRepoWidget().run();
