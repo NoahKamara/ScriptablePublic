@@ -5,7 +5,7 @@
 class Configuration {
     // Earliest Commit (Currently Date - 90 Days)
     static earliestCommit = new Date((new Date()).getTime() - 30*24*60*60*1000);
-    static githubToken = "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";
+    static githubToken = "";
 }
 
 class GithubRepoWidget {
