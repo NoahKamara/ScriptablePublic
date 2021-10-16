@@ -2,7 +2,6 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: deep-blue; icon-glyph: users;
 
-SERVER_ID = "211509689085722625"
 
 CONFIG = {
     // ID of the server
@@ -171,7 +170,7 @@ class DiscordWidget {
 
                 await this.createMemberList(list, server.members.slice(0+(5*i), 5+(5*i) - ((server.members.length > 10 && i == 1) ? 1 : 0)))
 
-                if (i == 1) {
+                if (i == 1 && server.members.length > 10) {
                     let text = list.addText("+"+(server.members.length-9)+" others")
                     text.font = Font.regularSystemFont(12)
                     text.textColor = this.mutedColor
@@ -223,7 +222,7 @@ class DiscordWidget {
 
     // Load Widget.json from Discord API
     async loadServerInfo() {
-        let url = "https://discord.com/api/guilds/" + SERVER_ID + "/widget.json"
+        let url = "https://discord.com/api/guilds/" + CONFIG.server_id + "/widget.json"
         let req = new Request(url)
         let json = await req.loadJSON()
 
