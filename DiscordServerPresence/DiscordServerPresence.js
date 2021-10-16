@@ -1,6 +1,6 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
-// icon-color: deep-purple; icon-glyph: users;
+// icon-color: deep-blue; icon-glyph: users;
 
 SERVER_ID = "211509689085722625"
 
@@ -20,7 +20,7 @@ CONFIG = {
 
 // No need to edit these, they are for testing the script 
 DEBUG = {
-    enabled: true,
+    enabled: false,
     widgetFamily: "small",
     memberCount: 20
 }
@@ -291,7 +291,7 @@ class DiscordWidget {
 			image = Image.fromFile(cache_file)
 			if (image === null) {
 				console.error("Couldn't load imgData from cache. redownloading")
-				let data = await (new Request(url)).loadImage()
+				let data = await (new Request(url)).load()
 				fm.write(cache_file, data)
                 this.loadImage(url)
 			}
