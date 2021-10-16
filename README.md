@@ -8,7 +8,7 @@ A Script to show some basic info about a repository
 
 
 ## [DiscordServerPresence](DiscordServerPresence/DiscordServerPresence.js)
-A Script to shows the online members of a discord server
+A Script to show the present (online) members of a discord server
 
 | Small Light | Small Dark | Medium Light |
 |---|---|---|
