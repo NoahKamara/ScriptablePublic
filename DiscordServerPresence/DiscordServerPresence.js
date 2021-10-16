@@ -20,7 +20,7 @@ CONFIG = {
 // No need to edit these, they are for testing the script 
 DEBUG = {
     enabled: false,
-    widgetFamily: "small",
+    widgetFamily: "medium",
     memberCount: 20
 }
 
@@ -291,6 +291,7 @@ class DiscordWidget {
 			if (image === null) {
 				console.error("Couldn't load imgData from cache. redownloading")
 				let data = await (new Request(url)).load()
+                image = Image.fromData(data)
 				fm.write(cache_file, data)
                 this.loadImage(url)
 			}
